@@ -14,9 +14,11 @@ class Authenticate extends Middleware
      */
     protected function redirectTo($request)
     {
-        //dd($request->route('prefix'));
+        //dd($request->expectsJson());
         if (! $request->expectsJson()) {
             //dd(\Tenant::isTenantRequest());
+
+            //dd('authenticate');
             $url = \Tenant::isTenantRequest() ?
                 route('tenant.login', \Request::route('environment')) :
                 route('system.login', 'system');

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\TenantConnection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -29,7 +31,7 @@ Route::get('/home', function() {
 
 
 
-
+// System routes
 Route::group(['prefix' => '/system', 'as' => 'system.'], function(){
     Auth::routes();
 
@@ -47,19 +49,21 @@ Route::group(['prefix' => '/system', 'as' => 'system.'], function(){
 
 });
 
-
+// Tenant routes
 Route::group(['prefix' => '/{environment}', 'as' => 'tenant.'], function(){
     Auth::routes();
+
+    //dd($locale = Request::segment(1));
 
     Route::get('/', function(){
         return view('auth.login');
     });
 
-    Route::group(['middleware' => 'auth:tenant'], function(){
+    Route::group(['middleware' => ['auth:tenant']], function(){
 
         Route::get('home', function () {
             return view('tenant.home');
-        })->name('home');;
+        })->name('home');
 
     });
 

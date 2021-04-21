@@ -21,38 +21,20 @@ class RedirectIfAuthenticated
     {
         $guard = \Tenant::isTenantRequest() ? 'tenant' : 'system';
 
-        //dd(Auth::guard($guard)->check());
+        if(empty(session('environment'))){
+            session(['environment' => \Request::segment(1)]);
+        }
 
         if (Auth::guard($guard)->check()) {
             //dd(Auth::guard($guard)->check());
+
             return $guard == 'tenant'?
                 redirect()->route('tenant.home', \Request::route('environment')):
                 redirect()->route('system.home');
         }
 
-        return $next($request);
-
-        /*
-        //dd($request->route());
-        $guards = empty($guards) ? [null] : $guards;
-
-        //dd($guards);
-
-        foreach ($guards as $guard) {
-            if (Auth::guard($guard)->check()) {
-
-                //dd($guard);
-
-                
-                return ($request->routeIs('system.*')) ? 
-                            redirect('system/' . RouteServiceProvider::HOME) : 
-                            redirect($request->route('environment') . '/' . RouteServiceProvider::HOME);
-                
-                //return redirect(RouteServiceProvider::HOME);
-            }
-        }
+        //dd(session('environment'));
 
         return $next($request);
-        */
     }
 }

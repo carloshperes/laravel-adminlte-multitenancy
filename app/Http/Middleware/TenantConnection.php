@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use App\Models\System\Company;
+use Illuminate\Support\Facades\Auth;
 
 class TenantConnection
 {
@@ -21,14 +22,22 @@ class TenantConnection
         $company        = null;
 
         //dd($environment);
+        //dd($request->segment(1));
 
         if($environment){
             $company    = Company::where('environment', $environment)->first();
 
             //dd($company);
             if($company){
+                
+                //
+                if(!empty(session('environment')) && session('environment') != $environment){
+                    //dd(session('environment') . ' => ' . $environment);
+                    abort(403, "That's not your environment.");
+                }
+                
                 \Tenant::setTenant($company);
-
+                
                 \Config::set('app.tenant', $environment);
             }
         }

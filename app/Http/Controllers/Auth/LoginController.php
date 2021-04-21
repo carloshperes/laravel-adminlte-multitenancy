@@ -59,16 +59,16 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
-        $url = explode('/', $request->headers->get('referer'));
+        $url = $request->segment(1);
 
-        //dd($url);
-        $this->guard()->logout();
-        
         $request->session()->flush();
 
         $request->session()->regenerate();
 
-        return redirect("/{$url[3]}/login");
+        //dd($url);
+        $this->guard($this->guard())->logout();
+
+        return redirect("/{$url}");
 
     }
 }
