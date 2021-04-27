@@ -14,7 +14,7 @@ class SeedTenant extends Command
      *
      * @var string
      */
-    protected $signature = 'tenant:seed';
+    protected $signature = 'tenant:seed {--drop}';
 
     /**
      * The console command description.
@@ -40,37 +40,69 @@ class SeedTenant extends Command
      */
     public function handle()
     {
-        if(Schema::hasTable((new Company())->getTable())){
-            $companies = Company::all();
-            foreach ($companies as $company) {
-                DB::statement("DROP DATABASE IF EXISTS {$company->database}"); // 
+        $drop = $this->option('drop');
+
+        //dd($drop);
+
+        if($drop){
+            if(Schema::hasTable((new Company())->getTable())){
+                $companies = Company::all();
+                foreach ($companies as $company) {
+                    DB::statement("DROP DATABASE IF EXISTS {$company->database}"); // 
+                }
+                $this->info('Tenant database dropped');
             }
-            $this->info('Tenant database dropped');
+
+            $fresh = ':fresh';
+        
+        } else {
+
+            $fresh = '';
+
         }
 
         $this->info('Seeding system');
-        $this->call('migrate:fresh', [
+        $this->call('migrate' . $fresh, [
             '--database'    => 'system',
             '--path'        => 'database/migrations/system'
         ]);
 
-        $this->call('db:seed', [
-            '--class'        => 'SystemDatabaseSeeder'
-        ]);
+        // If database was droped, seed again
+        if($drop){
+            $this->call('db:seed', [
+                '--class'        => 'SystemDatabaseSeeder'
+            ]);
+        }
 
         \Tenant::LoadConnections();
         $this->info('Seeding system finished');
 
+        $query = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME =  ?";
+
+        //$this->call('tenant:create', [
+        //    '--ids' => implode(',', $companies->pluck('id')->toArray())
+        //]);
+
         $companies = Company::all();
-        $this->call('tenant:create', [
-            '--ids' => implode(',', $companies->pluck('id')->toArray())
-        ]);
 
         foreach($companies as $company){
-            $this->call('db:seed', [
-                '--database'    => $company->environment,
-                '--class'       => 'TenantDatabaseSeeder'
-            ]);
+
+            $db = DB::select($query, [$company->database]);
+
+            if(empty($db)){
+                $this->call('tenant:create', [
+                    '--ids' => $company->id
+                ]);
+            }
+
+            // If database was droped, seed again
+            if($drop){
+                $this->call('db:seed', [
+                    '--database'    => $company->environment,
+                    '--class'       => 'TenantDatabaseSeeder'
+                ]);
+            }
+
         }
     }
 }

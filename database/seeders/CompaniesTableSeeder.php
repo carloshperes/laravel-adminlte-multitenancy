@@ -16,7 +16,7 @@ class CompaniesTableSeeder extends Seeder
     public function run()
     {
         foreach (range(1, 5) as $k => $value) {
-            $n = $K+1;
+            $n = $k+1;
             Company::create([
                 'name'          => "Company $value",
                 'database'      => "tenant_{$n}_".Str::random(16),
