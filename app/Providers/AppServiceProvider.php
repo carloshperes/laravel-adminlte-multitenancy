@@ -27,5 +27,7 @@ class AppServiceProvider extends ServiceProvider
     {
         //
         \Tenant::loadConnections();
+
+        // Menu
     }
 }

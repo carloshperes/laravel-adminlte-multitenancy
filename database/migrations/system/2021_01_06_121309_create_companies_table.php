@@ -15,10 +15,20 @@ class CreateCompaniesTable extends Migration
     {
         Schema::create('companies', function (Blueprint $table) {
             $table->id();
-            //$table->char('document', 14);
+            $table->unsignedBigInteger('company_type_id')->nullable();
+            $table->unsignedBigInteger('company_sector_id')->nullable();
+            $table->unsignedBigInteger('company_industry_id')->nullable();
+            $table->string('code')->nullable();
+            $table->char('cnpj', 14)->nullable();
             $table->string('name');
+            $table->string('trend_name')->nullable();
+            $table->string('site')->nullable();
+            $table->unsignedBigInteger('employees_number')->nullable();
+            $table->unsignedBigInteger('company_address_id')->nullable();
+
             $table->string('environment');
             $table->string('database');
+            $table->unsignedTinyInteger('status')->default(1);
             $table->timestamps();
         });
     }
